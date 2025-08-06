@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres
+    container_name: utkrusht_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+      - ./init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
+    environment:
+      POSTGRES_DB: utkrushtdb
+      POSTGRES_USER: utkrushtuser
+      POSTGRES_PASSWORD: utkrushtpass
+    networks:
+      - utkrusht_net
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: utkrusht_fastapi
+    restart: always
+    working_dir: /root/task
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - utkrusht_net
+
+networks:
+  utkrusht_net:
+    driver: bridge
